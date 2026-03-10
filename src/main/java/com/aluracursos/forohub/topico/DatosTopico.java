@@ -1,4 +1,11 @@
 package com.aluracursos.forohub.topico;
 
-public record DatosTopico() {
+import com.fasterxml.jackson.annotation.JsonAlias;
+
+public record DatosTopico(
+        String titulo,
+        String mensaje,
+        @JsonAlias("nombreCurso") String curso,
+        Integer idUsuario
+) {
 }

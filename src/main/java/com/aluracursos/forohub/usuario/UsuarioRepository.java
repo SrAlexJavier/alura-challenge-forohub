@@ -1,4 +1,6 @@
 package com.aluracursos.forohub.usuario;
 
-public interface UsuarioRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 }
