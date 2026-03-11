@@ -3,6 +3,7 @@ CREATE TABLE topicos (
    titulo VARCHAR(255) NOT NULL,
    mensaje TEXT NOT NULL,
    curso VARCHAR(255) NOT NULL,
+   fecha_creacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
    usuario_id BIGINT NOT NULL,
    CONSTRAINT fk_topicos_usuario FOREIGN KEY (usuario_id)
        REFERENCES usuarios (id)

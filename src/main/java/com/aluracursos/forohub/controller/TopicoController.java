@@ -1,16 +1,16 @@
 package com.aluracursos.forohub.controller;
 
-import com.aluracursos.forohub.topico.DatosTopico;
-import com.aluracursos.forohub.topico.Topico;
-import com.aluracursos.forohub.topico.TopicoRepository;
-import com.aluracursos.forohub.usuario.Usuario;
-import com.aluracursos.forohub.usuario.UsuarioRepository;
+import com.aluracursos.forohub.domain.topico.*;
+import com.aluracursos.forohub.domain.usuario.UsuarioRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
+
 
 @RestController
 @RequestMapping("/topico")
@@ -23,8 +23,43 @@ public class TopicoController {
 
     @Transactional
     @PostMapping
-    public void registrar(@RequestBody DatosTopico datos) {
-        topicoRepository.save(new Topico(datos, usuarioRepository.getReferenceById(Long.valueOf(datos.idUsuario()))));
+    public ResponseEntity<DatosListaTopico> registrar(@RequestBody @Valid DatosTopico datos, UriComponentsBuilder uriComponentsBuilder) {
+        var topico = new Topico(datos, usuarioRepository.getReferenceById(Long.valueOf(datos.idUsuario())));
+        topicoRepository.save(topico);
+        var uri = uriComponentsBuilder.path("/topico/{id}").buildAndExpand(topico.getId()).toUri();
 
+        return ResponseEntity.created(uri).body(new DatosListaTopico(topico));
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<DatosListaTopico>> listar(Pageable paginacion) {
+        var page =  topicoRepository.findAllByEstado(1, paginacion)
+                .map(DatosListaTopico::new);
+
+        return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity listarPorId(@PathVariable Long id) {
+        var topico =  new DatosListaTopico(topicoRepository.getReferenceById(id));
+        return ResponseEntity.ok(topico);
+    }
+
+    @Transactional
+    @PutMapping
+    public ResponseEntity<DatosListaTopico> actualizar(@RequestBody @Valid DatosActualizacionTopico datos) {
+        var topico = topicoRepository.getReferenceById(datos.id());
+        topico.actualizar(datos);
+
+        return ResponseEntity.ok(new DatosListaTopico(topico));
+    }
+
+    @Transactional
+    @DeleteMapping("/{id}")
+    public ResponseEntity eliminar(@PathVariable Long id) {
+        var topico = topicoRepository.getReferenceById(id);
+        topico.eliminar();
+
+        return ResponseEntity.noContent().build();
     }
 }
